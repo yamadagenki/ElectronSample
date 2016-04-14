@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <title>Settings</title>
+    <style>
+    body {
+      font-family: Verdana, sans-serif;
+      padding: 10px;
+      background: #eee;
+    }
+    h1 {
+      font-size: 16px;
+      margin: 0;
+      padding: 0 0 10px 0;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    ul > li {
+      font-size: 14px;
+      padding: 3px 0;
+    }
+    </style>
+  </head>
+  <body>
+    <h1>初期表示のWebページ</h1>
+    <ul>
+      <li><label><input type="radio" name="product" value="clinics">Clinics</label></li>
+      <li><label><input type="radio" name="product" value="medley">Medley</label></li>
+      <li><label><input type="radio" name="product" value="jm">Job Medley</label></li>
+      <li><label><input type="radio" name="product" value="honne">介護のほんね</label></li>
+    </ul>
+    <script>
+    'use strict';
+
+    const ipcRenderer = require('electron').ipcRenderer;
+    const storage = require('electron-json-storage');
+    let products = document.getElementsByName('product');
+
+    storage.get('config', function (error, data) {
+      if (error) throw error;
+
+      let currentProduct = null;
+      if (data.product === undefined) {
+        currentProduct = { product: 'clinics' };
+      } else {
+        currentProduct = data;
+      }
+
+      for (let i = 0; i < products.length; i++) {
+        if (currentProduct.product === products[i].value) {
+          products[i].checked = true;
+        }
+      }
+    });
+
+    for (let i = 0; i < products.length; i++) {
+      products[i].addEventListener('change', function() {
+        let product = this.value;
+        ipcRenderer.send('settings_changed', product);
+      });
+    }
+    </script>
+  </body>
+</html>
